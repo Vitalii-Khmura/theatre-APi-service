@@ -5,6 +5,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.pagination import PageNumberPagination
 
 
+
 from theatre.models import (
     Play,
     Actor,
@@ -68,12 +69,49 @@ class PlaysViewSet(
     queryset = Play.objects.prefetch_related("actors", "genres")
     serializer_class = PlaySerializer
 
+    @staticmethod
+    def _param_to_int(qs):
+        return [int(str_id) for str_id in qs.split(",")]
+
+    def get_queryset(self):
+        genres = self.request.query_params.get("genres")
+        actors = self.request.query_params.get("actors")
+        queryset = self.queryset
+
+        if genres:
+            genre_ids = self._param_to_int(genres)
+
+            queryset = self.queryset.filter(genres__id__in=genre_ids)
+        if actors:
+            actor_ids = self._param_to_int(actors)
+            queryset = self.queryset.filter(actors__id__in=actor_ids)
+
+        return queryset
+
     def get_serializer_class(self):
         if self.action == "list":
             return PlayListSerializer
         if self.action == "retrieve":
             return PlayDetailSerializer
         return PlaySerializer
+
+    # Only for documentation purposes
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "genres",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by genres id (ex. ?genres=1,2)"
+            ),
+            OpenApiParameter(
+                "actors",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by genres id (ex. ?actors=1,2)"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class PerformanceViewSet(
