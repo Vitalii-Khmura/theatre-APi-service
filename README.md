@@ -1,11 +1,11 @@
 # Theatre API service
 
-Django REST Framework  API project for theatre service
+_Django REST Framework  API project for theatre service_
 
 
-## Instalation
+## ___Instalation___
 
-Python3 must be already installed
+_Python3 must be already installed_
 
 ```shell
 git clone https://github.com/Vitalii-Khmura/theatre-APi-service.git
@@ -42,6 +42,28 @@ Finally, perform the migration, write next command in terminal:
 After loading data from fixture you can use following superuser (or create another one by yourself):
 * Login: ```test_user```
 * Password:```admin```
+
+
+## ___Run with docker___
+
+_Docker should be installed_
+
+```shell
+    docker-compose build
+    docker-compose up
+```
+
+## ___Feauteres___
+
+- JWT authentication
+- Admin panel /admin/
+- Documentation is located at /api/doc/swagger/
+- Managing actors & genres
+- Creating performance
+- Creating plays with actor and genres
+- Creating Theatre Hall
+- Make a reservation
+
 
 
 
