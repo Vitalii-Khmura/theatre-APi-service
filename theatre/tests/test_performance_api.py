@@ -5,26 +5,25 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from theatre.models import Actor, Play, TheatreHall, Performance, Ticket, Reservation
-from theatre.serializers import ActorSerializer, ActorDetailSerializer, PerformanceListSerializer, \
-    PerformanceSerializer, PerformanceDetailSerializer
+from theatre.serializers import (
+    ActorSerializer,
+    ActorDetailSerializer,
+    PerformanceListSerializer,
+    PerformanceSerializer,
+    PerformanceDetailSerializer,
+)
 
 PERFORMANCE_URL = reverse("theatre:performance-list")
 
 
 def sample_performance(**params):
-    play = Play.objects.create(
-        title="Test Play"
-    )
-    theatre_hall = TheatreHall.objects.create(
-        name="Big Hall",
-        rows=15,
-        seats_in_row=20
-    )
+    play = Play.objects.create(title="Test Play")
+    theatre_hall = TheatreHall.objects.create(name="Big Hall", rows=15, seats_in_row=20)
 
     default = {
         "play": play,
         "theatre_hall": theatre_hall,
-        "show_time": "2024-02-16 20:42:00"
+        "show_time": "2024-02-16 20:42:00",
     }
 
     default.update(params)
@@ -50,8 +49,7 @@ class AuthorizedPerformanceApiTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            email="test@user.com",
-            password="testpass"
+            email="test@user.com", password="testpass"
         )
 
         self.client.force_authenticate(self.user)
@@ -60,12 +58,7 @@ class AuthorizedPerformanceApiTest(TestCase):
         sample_performance()
         one = Reservation.objects.create(user=self.user)
 
-        Ticket.objects.create(
-            row=1,
-            seat=5,
-            performance_id=1,
-            reservation=one
-        )
+        Ticket.objects.create(row=1, seat=5, performance_id=1, reservation=one)
 
         res = self.client.get(PERFORMANCE_URL)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
@@ -83,14 +76,10 @@ class AuthorizedPerformanceApiTest(TestCase):
 
     def test_create_performance_forbidden(self):
         payload = {
-            "play": Play.objects.create(
-                title="test play"
-            ),
+            "play": Play.objects.create(title="test play"),
             "theatre_hall": TheatreHall.objects.create(
-                name="Big hall",
-                rows=10,
-                seats_in_row=20
-            )
+                name="Big hall", rows=10, seats_in_row=20
+            ),
         }
 
         res = self.client.post(PERFORMANCE_URL, payload)
@@ -99,34 +88,21 @@ class AuthorizedPerformanceApiTest(TestCase):
 
 
 class AdminActorApiTest(TestCase):
-
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            email="test@user.com",
-            password="testpass",
-            is_staff=True
+            email="test@user.com", password="testpass", is_staff=True
         )
 
         self.client.force_authenticate(self.user)
 
     def test_create_performance(self):
-        play = Play.objects.create(
-                title="test play"
-            )
-        theatre_hall =TheatreHall.objects.create(
-            name="Big hall",
-            rows=10,
-            seats_in_row=20
+        play = Play.objects.create(title="test play")
+        theatre_hall = TheatreHall.objects.create(
+            name="Big hall", rows=10, seats_in_row=20
         )
-        payload = {
-            "play": play.id,
-            "theatre_hall": theatre_hall.id
-        }
+        payload = {"play": play.id, "theatre_hall": theatre_hall.id}
 
         res = self.client.post(PERFORMANCE_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-
-
-

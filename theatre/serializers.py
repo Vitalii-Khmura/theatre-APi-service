@@ -4,7 +4,10 @@ from theatre.models import (
     Play,
     Actor,
     TheatreHall,
-    Performance, Genre, Reservation, Ticket
+    Performance,
+    Genre,
+    Reservation,
+    Ticket,
 )
 
 
@@ -23,12 +26,7 @@ class ActorDetailSerializer(ActorSerializer):
 
     class Meta:
         model = Actor
-        fields = (
-            "id",
-            "first_name",
-            "last_name",
-            "play"
-        )
+        fields = ("id", "first_name", "last_name", "play")
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -42,7 +40,6 @@ class GenreListSerializer(GenreSerializer):
 
 
 class PlaySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Play
         fields = "__all__"
@@ -54,13 +51,7 @@ class PlayListSerializer(PlaySerializer):
 
     class Meta:
         model = Play
-        fields = (
-            "id",
-            "title",
-            "genres",
-            "actors",
-            "description"
-        )
+        fields = ("id", "title", "genres", "actors", "description")
 
 
 class PlayDetailSerializer(PlaySerializer):
@@ -75,7 +66,6 @@ class TheatreHallSerializer(serializers.ModelSerializer):
 
 
 class PerformanceSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Performance
         fields = "__all__"
@@ -84,9 +74,7 @@ class PerformanceSerializer(serializers.ModelSerializer):
 class PerformanceListSerializer(PerformanceSerializer):
     play = serializers.StringRelatedField(many=False)
     theatre_hall = serializers.StringRelatedField(many=False)
-    tickets_available = serializers.IntegerField(
-        read_only=True
-    )
+    tickets_available = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Performance
@@ -105,23 +93,16 @@ class PerformanceDetailSerializer(PerformanceSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Ticket
-        fields = (
-            "id",
-            "row",
-            "seat",
-            "performance"
-        )
+        fields = ("id", "row", "seat", "performance")
 
     def validate(self, attrs):
         data = super(TicketSerializer, self).validate(attrs=attrs)
         Ticket.validate_ticket(
             row=attrs["row"],
             seat=attrs["seat"],
-            theatre_hall=attrs["performance"].theatre_hall
-
+            theatre_hall=attrs["performance"].theatre_hall,
         )
         return data
 
@@ -135,21 +116,23 @@ class ReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = (
-            "id",
-            "tickets",
-            "created_at"
-        )
+        fields = ("id", "tickets", "created_at")
 
     @transaction.atomic
     def create(self, validated_data):
         with transaction.atomic():
-            tickets_data = validated_data.pop('tickets')
+            tickets_data = validated_data.pop("tickets")
             reservation = Reservation.objects.create(**validated_data)
             for ticket_data in tickets_data:
-                Ticket.objects.create(reservation=reservation, **ticket_data)
+                Ticket.objects.create(
+                    reservation=reservation,
+                    **ticket_data)
         return reservation
 
 
 class ReservationListSerializer(ReservationSerializer):
-    tickets = TicketListSerializer(many=True, read_only=False, allow_null=False)
+    tickets = TicketListSerializer(
+        many=True,
+        read_only=False,
+        allow_null=False
+    )

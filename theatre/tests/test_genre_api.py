@@ -11,9 +11,7 @@ GENRE_URL = reverse("theatre:genre-list")
 
 
 def sample_genre(**params):
-    defaults = {
-        "name": "Test Drama"
-    }
+    defaults = {"name": "Test Drama"}
 
     defaults.update(params)
 
@@ -39,14 +37,12 @@ class AuthorizedGenreApiTest(TestCase):
         self.client = APIClient()
 
         self.user = get_user_model().objects.create_user(
-            email="test@user.com",
-            password="testpass"
+            email="test@user.com", password="testpass"
         )
 
         self.client.force_authenticate(self.user)
 
     def test_list_genre(self):
-
         sample_genre()
         sample_genre(name="Action")
 
@@ -61,9 +57,7 @@ class AuthorizedGenreApiTest(TestCase):
     def test_retrieve_genre_detail(self):
         genre = sample_genre()
 
-        genre.play.add(Play.objects.create(
-            title="Test Drama"
-        ))
+        genre.play.add(Play.objects.create(title="Test Drama"))
 
         url = detail_url(genre_id=genre.id)
         res = self.client.get(url)
@@ -73,9 +67,7 @@ class AuthorizedGenreApiTest(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_create_genre_forbidden(self):
-        payload = {
-            "name": "Test"
-        }
+        payload = {"name": "Test"}
 
         res = self.client.post(GENRE_URL, payload)
 
@@ -87,21 +79,17 @@ class AdminGenreApiTest(TestCase):
         self.client = APIClient()
 
         self.user = get_user_model().objects.create_user(
-            email="admin@admin.com",
-            password="testpass",
-            is_staff=True
+            email="admin@admin.com", password="testpass", is_staff=True
         )
 
         self.client.force_authenticate(self.user)
 
     def test_create_genre(self):
-        payload = {
-            "name": "Drama"
-        }
+        payload = {"name": "Drama"}
 
         res = self.client.post(GENRE_URL, payload)
         genre = Genre.objects.get(id=res.data["id"])
         serializer = GenreSerializer(genre)
-       
+
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res.data, serializer.data)

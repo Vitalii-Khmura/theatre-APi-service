@@ -5,20 +5,19 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from theatre.models import Actor, Play, TheatreHall, Performance
-from theatre.serializers import ActorSerializer, ActorDetailSerializer, PerformanceListSerializer, \
-    PerformanceSerializer, TheatreHallSerializer
+from theatre.serializers import (
+    ActorSerializer,
+    ActorDetailSerializer,
+    PerformanceListSerializer,
+    PerformanceSerializer,
+    TheatreHallSerializer,
+)
 
 THEATRE_HALL_URL = reverse("theatre:theatrehall-list")
 
 
-
 def sample_theatre_hall(**params):
-
-    default = {
-        "name": "Big Hall",
-        "rows": 15,
-        "seats_in_row": 20
-    }
+    default = {"name": "Big Hall", "rows": 15, "seats_in_row": 20}
 
     return TheatreHall.objects.create(**default)
 
@@ -41,8 +40,7 @@ class AuthorizedTheatreHallApiTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            email="test@user.com",
-            password="testpass"
+            email="test@user.com", password="testpass"
         )
 
         self.client.force_authenticate(self.user)
@@ -68,13 +66,8 @@ class AuthorizedTheatreHallApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
-
     def test_create_theatre_hall_forbidden(self):
-        payload = {
-            "name": "Big Hall",
-            "rows": 15,
-            "seats_in_row": 20
-        }
+        payload = {"name": "Big Hall", "rows": 15, "seats_in_row": 20}
 
         res = self.client.post(THEATRE_HALL_URL, payload)
 
@@ -85,19 +78,13 @@ class AdminActorApiTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            email="test@user.com",
-            password="testpass",
-            is_staff=True
+            email="test@user.com", password="testpass", is_staff=True
         )
 
         self.client.force_authenticate(self.user)
 
     def test_create_theatre_hall(self):
-        payload = {
-            "name": "Big Hall",
-            "rows": 15,
-            "seats_in_row": 20
-        }
+        payload = {"name": "Big Hall", "rows": 15, "seats_in_row": 20}
 
         res = self.client.post(THEATRE_HALL_URL, payload)
         theatre_hall = TheatreHall.objects.get(id=res.data["id"])

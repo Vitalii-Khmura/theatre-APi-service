@@ -12,7 +12,8 @@ from theatre.models import (
     Performance,
     Genre,
     Reservation,
-    TheatreHall)
+    TheatreHall
+)
 from theatre.serializers import (
     PlaySerializer,
     PlayListSerializer,
@@ -30,12 +31,7 @@ from theatre.serializers import (
 )
 
 
-class ActorViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
-):
+class ActorViewSet(viewsets.ModelViewSet):
     queryset = Actor.objects.prefetch_related("play")
     serializer_class = ActorSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
@@ -50,7 +46,7 @@ class GenreViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     queryset = Genre.objects.prefetch_related("play")
     serializer_class = GenreSerializer
@@ -66,7 +62,7 @@ class PlaysViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     queryset = Play.objects.prefetch_related("actors", "genres")
     serializer_class = PlaySerializer
@@ -104,38 +100,32 @@ class PlaysViewSet(
             OpenApiParameter(
                 "genres",
                 type={"type": "list", "items": {"type": "number"}},
-                description="Filter by genres id (ex. ?genres=1,2)"
+                description="Filter by genres id (ex. ?genres=1,2)",
             ),
             OpenApiParameter(
                 "actors",
                 type={"type": "list", "items": {"type": "number"}},
-                description="Filter by genres id (ex. ?actors=1,2)"
-            )
+                description="Filter by genres id (ex. ?actors=1,2)",
+            ),
         ]
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
 
-class PerformanceViewSet(
-    viewsets.ModelViewSet
-):
-    queryset = Performance.objects.select_related(
-        "play",
-        "theatre_hall"
-    )
+class PerformanceViewSet(viewsets.ModelViewSet):
+    queryset = Performance.objects.select_related("play", "theatre_hall")
     serializer_class = PerformanceSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
         queryset = self.queryset
         if self.action == "list":
-            queryset = queryset.prefetch_related(
-                "tickets"
-            ).annotate(
+            queryset = queryset.prefetch_related("tickets").annotate(
                 tickets_available=ExpressionWrapper(
-                    F("theatre_hall__rows") * F("theatre_hall__seats_in_row") - Count("tickets"),
-                    output_field=IntegerField()
+                    F("theatre_hall__rows") * F("theatre_hall__seats_in_row")
+                    - Count("tickets"),
+                    output_field=IntegerField(),
                 )
             )
         return queryset
@@ -153,9 +143,7 @@ class ReservationPagination(PageNumberPagination):
     page_size_query_param = "page_size"
 
 
-class ReservationViewSet(
-    viewsets.ModelViewSet
-):
+class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
     pagination_class = ReservationPagination
@@ -165,9 +153,7 @@ class ReservationViewSet(
         queryset = self.queryset.filter(user=self.request.user)
 
         if self.action == "list":
-            queryset = queryset.prefetch_related(
-                "tickets__performance__play"
-            )
+            queryset = queryset.prefetch_related("tickets__performance__play")
 
         return queryset
 
@@ -179,7 +165,7 @@ class TheatreHallViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     queryset = TheatreHall.objects.all()
     serializer_class = TheatreHallSerializer

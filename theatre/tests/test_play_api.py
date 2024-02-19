@@ -18,7 +18,6 @@ def detail_url(play_id: int):
 def sample_play(**params):
     defaults = {
         "title": "Test Play",
-
     }
 
     defaults.update(params)
@@ -39,10 +38,7 @@ class UnauthenticatedApiTests(TestCase):
 class AuthenticatedApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            "test@test.com",
-            "testpass"
-        )
+        self.user = get_user_model().objects.create_user("test@test.com", "testpass")
 
         self.client.force_authenticate(self.user)
 
@@ -53,15 +49,9 @@ class AuthenticatedApiTests(TestCase):
         genre1 = Genre.objects.create(name="Action")
         genre2 = Genre.objects.create(name="Drama")
 
-        actor1 = Actor.objects.create(
-            first_name="Brad",
-            last_name="Pitt"
-        )
+        actor1 = Actor.objects.create(first_name="Brad", last_name="Pitt")
 
-        actor2 = Actor.objects.create(
-            first_name="Leonardo",
-            last_name="Dicaprio"
-        )
+        actor2 = Actor.objects.create(first_name="Leonardo", last_name="Dicaprio")
 
         play_with_genre.genres.add(genre1, genre2)
         play_with_actors.actors.add(actor1, actor2)
@@ -87,9 +77,7 @@ class AuthenticatedApiTests(TestCase):
 
         play3 = sample_play(title="Play without genre")
 
-        res = self.client.get(PLAY_URL, {
-            "genres": f"{genre1.id}, {genre2.id}"
-        })
+        res = self.client.get(PLAY_URL, {"genres": f"{genre1.id}, {genre2.id}"})
 
         serializer1 = PlayListSerializer(play1)
         serializer2 = PlayListSerializer(play2)
@@ -103,24 +91,16 @@ class AuthenticatedApiTests(TestCase):
         play1 = sample_play(title="Play 1")
         play2 = sample_play(title="Play 2")
 
-        actor1 = Actor.objects.create(
-            first_name="Brad",
-            last_name="Pitt"
-        )
+        actor1 = Actor.objects.create(first_name="Brad", last_name="Pitt")
 
-        actor2 = Actor.objects.create(
-            first_name="Leonardo",
-            last_name="Dicaprio"
-        )
+        actor2 = Actor.objects.create(first_name="Leonardo", last_name="Dicaprio")
 
         play1.actors.add(actor1)
         play2.actors.add(actor2)
 
         play3 = sample_play(title="Play without actor")
 
-        res = self.client.get(PLAY_URL, {
-            "actors": f"{actor1.id}, {actor2.id}"
-        })
+        res = self.client.get(PLAY_URL, {"actors": f"{actor1.id}, {actor2.id}"})
 
         serializer1 = PlayListSerializer(play1)
         serializer2 = PlayListSerializer(play2)
@@ -132,10 +112,7 @@ class AuthenticatedApiTests(TestCase):
 
     def test_retrieve_play_detail(self):
         play = sample_play()
-        play.actors.add(Actor.objects.create(
-            first_name="Brad",
-            last_name="Pitt"
-        ))
+        play.actors.add(Actor.objects.create(first_name="Brad", last_name="Pitt"))
         play.genres.add(Genre.objects.create(name="Drama"))
 
         url = detail_url(play_id=play.id)
@@ -147,22 +124,17 @@ class AuthenticatedApiTests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_create_play_forbidden(self):
-        payload = {
-            "info": "Play"
-        }
+        payload = {"info": "Play"}
 
         res = self.client.post(PLAY_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class AdminApiTest(TestCase):
-
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            email="admin@admin.com",
-            password="testpass",
-            is_staff=True
+            email="admin@admin.com", password="testpass", is_staff=True
         )
 
         self.client.force_authenticate(self.user)
@@ -170,15 +142,12 @@ class AdminApiTest(TestCase):
     def test_create_play(self):
         genre1 = Genre.objects.create(name="Drama")
         genre2 = Genre.objects.create(name="Action")
-        actors = Actor.objects.create(
-            first_name="Brad",
-            last_name="Pitt"
-        )
+        actors = Actor.objects.create(first_name="Brad", last_name="Pitt")
 
         payload = {
             "title": "Play",
             "genres": [genre1.id, genre2.id],
-            "actors": [actors.id]
+            "actors": [actors.id],
         }
 
         res = self.client.post(PLAY_URL, payload)
@@ -195,4 +164,3 @@ class AdminApiTest(TestCase):
         self.assertIn(genre2, play_genre)
         for key in payload:
             self.assertEqual(payload[key], (serializer.data[key]))
-

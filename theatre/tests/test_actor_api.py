@@ -11,10 +11,7 @@ ACTOR_URL = reverse("theatre:actor-list")
 
 
 def sample_actor(**params):
-    default = {
-        "first_name": "Test",
-        "last_name": "User"
-    }
+    default = {"first_name": "Test", "last_name": "User"}
 
     default.update(params)
 
@@ -40,8 +37,7 @@ class AuthorizedActorApiTest(TestCase):
         self.client = APIClient()
 
         self.user = get_user_model().objects.create_user(
-            email="test@user.com",
-            password="testpass"
+            email="test@user.com", password="testpass"
         )
 
         self.client.force_authenticate(self.user)
@@ -57,10 +53,7 @@ class AuthorizedActorApiTest(TestCase):
         self.assertEqual(res.data, serializers.data)
 
     def test_retrieve_actor_detail(self):
-        actor = Actor.objects.create(
-            first_name="Test",
-            last_name="User"
-        )
+        actor = Actor.objects.create(first_name="Test", last_name="User")
 
         url = actor_url(actor_id=actor.id)
         res = self.client.get(url)
@@ -71,10 +64,7 @@ class AuthorizedActorApiTest(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_create_actor_forbidden(self):
-        payload = {
-            "first_name": "Test",
-            "last_name": "User"
-        }
+        payload = {"first_name": "Test", "last_name": "User"}
 
         res = self.client.post(ACTOR_URL, payload)
 
@@ -86,18 +76,13 @@ class AdminActorApiTest(TestCase):
         self.client = APIClient()
 
         self.user = get_user_model().objects.create_user(
-            email="test@user.com",
-            password="testpass",
-            is_staff=True
+            email="test@user.com", password="testpass", is_staff=True
         )
 
         self.client.force_authenticate(self.user)
 
     def test_create_actor(self):
-        payload = {
-            "first_name": "Test",
-            "last_name": "User"
-        }
+        payload = {"first_name": "Test", "last_name": "User"}
 
         res = self.client.post(ACTOR_URL, payload)
         actor = Actor.objects.get(id=res.data["id"])
